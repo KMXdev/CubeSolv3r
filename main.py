@@ -20,6 +20,7 @@ from pybricks.media.ev3dev import Font, SoundFile, ImageFile
 
 from copy import deepcopy
 
+# c = 3*(10**8)
 
 # font definitions
 bigFont = Font(size = 25, bold = True)
@@ -31,7 +32,7 @@ ev3 = EV3Brick()
 # Motor objects
 tiltMotor = Motor(Port.A, Direction.CLOCKWISE)
 tableMotor = Motor(Port.B, Direction.CLOCKWISE)         # [12, 36]
-colorMotor = Motor(Port.C, Direction.COUNTERCLOCKWISE)
+colorMotor = Motor(Port.C, Direction.COUNTERCLOCKWISE)  # [12, 36]
 
 # Sensor objects
 infraredSensor = InfraredSensor(Port.S1)
@@ -54,7 +55,7 @@ def message(text):
 
 # calibrate the motor which is responsible for moving the color sensor
 def scanCal():
-    colorMotor.run_angle(500, 200, Stop.BRAKE, True)
+    colorMotor.run_until_stalled(500, Stop.COAST, 40)
     colorMotor.run_until_stalled(-500, Stop.COAST, 40)
     wait(250)
     colorMotor.run_angle(500, 340, Stop.BRAKE, True)
@@ -121,7 +122,7 @@ def code_lock():
                 return True
             else:
                 if c_input == calib_code:
-
+                    cc_sensor()
                 return False
 
 # calibrate color sensor
@@ -151,7 +152,7 @@ def cubeCheck():
 
 # scan all faces of the cube and store them
 def scanCube():
-    faces = [[] for x in range(6)]
+    faces = [[]] * 6
     for i in range(6):
         scanned_face = scanFace()
         faces[i] = deepcopy(scanned_face)
@@ -159,32 +160,43 @@ def scanCube():
 
 # scan a single face
 def scanFace():
-    face = [6 for x in range(9)]
+    face = [[6]] * 9
+    
+    movetomiddle = 435
+    middletoedge = -200
+    edgetocorner = -80
+    tablestep = -135
+    
+    ev3.screen.clear()
+    ev3.screen.print(colorMotor.angle())
+    colorMotor.run_angle(500, movetomiddle, Stop.BRAKE, True)
+    
     # scan the middle tile
-    colorMotor.run_angle(500, 430, Stop.BRAKE, True)
     face[0] = getColor(colorSensor.rgb())
-    colorMotor.run_angle(300, -100, Stop.BRAKE, True)
+    colorMotor.run_angle(500, middletoedge, Stop.HOLD, True)
+    wait(300)
     
     for i in range(4):
         # edges
-        face[1+(i+1)*2] = getColor(colorSensor.rgb())
-        colorMotor.run_angle(300, -50, Stop.BRAKE, False)
-        tableMotor.run_angle(200, -135, Stop.BRAKE, True)
+        face[i*2+1] = getColor(colorSensor.rgb())
+        colorMotor.run_angle(300, edgetocorner, Stop.HOLD, False)
+        tableMotor.run_angle(200, tablestep, Stop.BRAKE, True)
+        
         # corners
-        face[2+(i+1)*2] = getColor(colorSensor.rgb())
-        colorMotor.run_angle(300, 50, Stop.BRAKE, False)
-        tableMotor.run_angle(200, -135, Stop.BRAKE, True)
+        face[i*2+2] = getColor(colorSensor.rgb())
+        colorMotor.run_angle(300, -(edgetocorner), Stop.HOLD, False)
+        tableMotor.run_angle(200, tablestep, Stop.BRAKE, True)
     
     # reset the scanner position
-    colorMotor.run_angle(300, -330, Stop.BRAKE, False)
-    tableMotor.run_angle(200, -135, Stop.BRAKE, True)
-
+    colorMotor.run_angle(300, -235, Stop.HOLD, True)
     return face
 
 
 # calculate a color value from an rgb input
 def getColor(rgb):
     # translate rgb to colorcode 0=black 1=blue 2=green 3=yellow 4=red 5=white 6=none
+    # ev3.screen.clear()
+    # ev3.screen.print(rgb)
     return rgb
 
 
@@ -195,7 +207,7 @@ ev3.light.on(Color.RED)
 banner()
 wait(1000)
 
-# request code
+request code
 unlocked = False
 while not unlocked:
     if code_lock():
@@ -214,6 +226,9 @@ message('Reset Tilt')
 tiltCal()
 
 cubeCheck()
+
+wait(1000)
+
 scanCube()
 
 wait(3000)
