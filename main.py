@@ -202,6 +202,14 @@ def getColor(rgb):
     # ev3.screen.print(rgb)
     return rgb
 
+# tilt the cube
+def tilt():
+    tiltMotor.run_angle(195, tablestep, Stop.BRAKE, True)
+    tiltMotor.run_angle(-15, tablestep, Stop.BRAKE, True)
+    tiltMotor.run_angle(60, tablestep, Stop.BRAKE, True)
+
+#turn the cube 90deg clockwise
+def turn():
 
 
 # ------ program start ------
