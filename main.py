@@ -9,6 +9,9 @@ Based on the .ev3 program written by David Gilday
 
 Building instructions and original program can be found at:
 https://www.mindcuber.com/mindcub3r/mindcub3r.html
+
+(c) Jakob Schönlinner and Quirin Möller 2020
+License: cc-by-4.0
 """
 
 
@@ -31,7 +34,7 @@ ev3 = EV3Brick()
 
 # Motor objects
 tiltMotor = Motor(Port.A, Direction.CLOCKWISE)
-tableMotor = Motor(Port.B, Direction.CLOCKWISE)         # [12, 36]
+tableMotor = Motor(Port.B, Direction.CLOCKWISE)         # [12, 36] 108 - 36 36 - 108
 colorMotor = Motor(Port.C, Direction.COUNTERCLOCKWISE)  # [12, 36]
 
 # Sensor objects
@@ -87,43 +90,43 @@ def entprell():
     return
  
 
-# code lock
-def code_lock():
-    # define variables for code-lock
-    code = [0,0,0]
-    c_input = [0,0,0]
-    calib_code = [5,8,2]
-    selected = 0
-    # initialize code input
-    draw_input(c_input, selected)
-    while True:
-        pressed = ev3.buttons.pressed()        
-        if Button.LEFT in pressed:
-            selected -= 1
-            selected %= 3
-            entprell()
-        if Button.RIGHT in pressed:
-            selected += 1
-            selected %= 3
-            entprell()
-        if Button.UP in pressed:
-            c_input[selected] += 1
-            c_input[selected] %= 10
-            entprell()
-        if Button.DOWN in pressed:
-            c_input[selected] -= 1
-            c_input[selected] %= 10
-            entprell()
-        if pressed:
-            draw_input(c_input, selected)
-        if Button.CENTER in pressed:
-            entprell()
-            if c_input == code:
-                return True
-            else:
-                if c_input == calib_code:
-                    cc_sensor()
-                return False
+# # code lock
+# def code_lock():
+#     # define variables for code-lock
+#     code = [0,0,0]
+#     c_input = [0,0,0]
+#     calib_code = [5,8,2]
+#     selected = 0
+#     # initialize code input
+#     draw_input(c_input, selected)
+#     while True:
+#         pressed = ev3.buttons.pressed()        
+#         if Button.LEFT in pressed:
+#             selected -= 1
+#             selected %= 3
+#             entprell()
+#         if Button.RIGHT in pressed:
+#             selected += 1
+#             selected %= 3
+#             entprell()
+#         if Button.UP in pressed:
+#             c_input[selected] += 1
+#             c_input[selected] %= 10
+#             entprell()
+#         if Button.DOWN in pressed:
+#             c_input[selected] -= 1
+#             c_input[selected] %= 10
+#             entprell()
+#         if pressed:
+#             draw_input(c_input, selected)
+#         if Button.CENTER in pressed:
+#             entprell()
+#             if c_input == code:
+#                 return True
+#             else:
+#                 if c_input == calib_code:
+#                     cc_sensor()
+#                 return False
 
 # calibrate color sensor
 def cc_sensor():
@@ -207,17 +210,17 @@ ev3.light.on(Color.RED)
 banner()
 wait(1000)
 
-request code
-unlocked = False
-while not unlocked:
-    if code_lock():
-        unlocked = True
-    else:
-        ev3.screen.clear()
-        ev3.screen.draw_text(ev3.screen.width/2, ev3.screen.height/2, 'falsch!!!', Color.BLACK, None)
-        ev3.speaker.set_speech_options('de', 'm5', 10, 30)
-        ev3.speaker.set_volume(100, '_all_')
-        ev3.speaker.say('Das wars komplett')
+# # request code
+# unlocked = False
+# while not unlocked:
+#     if code_lock():
+#         unlocked = True
+#     else:
+#         ev3.screen.clear()
+#         ev3.screen.draw_text(ev3.screen.width/2, ev3.screen.height/2, 'falsch!!!', Color.BLACK, None)
+#         ev3.speaker.set_speech_options('de', 'm5', 10, 30)
+#         ev3.speaker.set_volume(100, '_all_')
+#         ev3.speaker.say('Das wars komplett')
 
 message('Reset Scan')
 scanCal()
