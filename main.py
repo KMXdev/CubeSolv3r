@@ -11,7 +11,7 @@ Building instructions and original program can be found at:
 https://www.mindcuber.com/mindcub3r/mindcub3r.html
 
 (c) Jakob Schönlinner and Quirin Möller 2020
-License: cc-by-4.0
+License: GPL-3.0 License
 """
 
 
@@ -22,6 +22,8 @@ from pybricks.tools import wait, StopWatch, DataLog
 from pybricks.media.ev3dev import Font, SoundFile, ImageFile
 
 from copy import deepcopy
+
+from rubik.cube import Cube
 
 # c = 3*(10**8)
 
@@ -34,7 +36,7 @@ ev3 = EV3Brick()
 
 # Motor objects
 tiltMotor = Motor(Port.A, Direction.CLOCKWISE)
-tableMotor = Motor(Port.B, Direction.CLOCKWISE)         # [12, 36] 108 - 36 36 - 108
+tableMotor = Motor(Port.B, Direction.CLOCKWISE)         # [12, 36]
 colorMotor = Motor(Port.C, Direction.COUNTERCLOCKWISE)  # [12, 36]
 
 # Sensor objects
@@ -156,9 +158,19 @@ def cubeCheck():
 # scan all faces of the cube and store them
 def scanCube():
     faces = [[]] * 6
-    for i in range(6):
+    for i in range(4):
         scanned_face = scanFace()
         faces[i] = deepcopy(scanned_face)
+        tilt()
+    turn()
+    tilt()
+    scanned_face = scanFace()
+    faces[4] = deepcopy(scanned_face)
+    tilt()
+    wait(1000)
+    tilt()
+    scanned_face = scanFace()
+    faces[5] = deepcopy(scanned_face)
 
 
 # scan a single face
@@ -202,14 +214,21 @@ def getColor(rgb):
     # ev3.screen.print(rgb)
     return rgb
 
+# # tilt the cube
+# def tilt():
+#     tiltMotor.run_target(200, 85, Stop.BRAKE, True)
+#     tiltMotor.run_target(200, 195, Stop.BRAKE, True)
+#     tiltMotor.run_target(200, 60, Stop.BRAKE, True)
+#     tiltMotor.run_target(200, 85, Stop.BRAKE, True)
+
 # tilt the cube
 def tilt():
-    tiltMotor.run_angle(195, tablestep, Stop.BRAKE, True)
-    tiltMotor.run_angle(-15, tablestep, Stop.BRAKE, True)
-    tiltMotor.run_angle(60, tablestep, Stop.BRAKE, True)
+    tiltMotor.run_angle(175, 190, Stop.BRAKE, True)
+    tiltMotor.run_until_stalled(-175, Stop.COAST, 40)
 
 #turn the cube 90deg clockwise
 def turn():
+    tableMotor.run_angle(200, 270, Stop.BRAKE, True)
 
 
 # ------ program start ------
@@ -243,7 +262,6 @@ wait(1000)
 scanCube()
 
 wait(3000)
-
 
 
 
