@@ -24,6 +24,7 @@ from subprocess import check_output
 from time import sleep
 from ev3dev2.button import Button
 from ev3dev2.display import Display
+import ev3dev2.fonts as fonts
 import json
 import logging
 import os
@@ -88,7 +89,7 @@ class MindCuber(object):
 
     def init_motors(self):
 
-        dpl.text_pixels('Initialisierung...', clear_screen=True, x=10, y=10, text_color='black', font=None)
+        dpl.text_pixels('Initialisierung...', clear_screen=True, x=10, y=10, text_color='black', font=fonts.load('luBS19'))
 
         for x in (self.flipper, self.turntable, self.colorarm):
             x.reset()
@@ -222,7 +223,7 @@ class MindCuber(object):
         # Grab the cube and pull back
         self.flipper.ramp_up_sp = 200
         self.flipper.ramp_down_sp = 0
-        self.flipper.on_to_position(SpeedDPS(self.flip_speed), 190)
+        self.flipper.on_to_position(SpeedDPS(self.flip_speed), 200)     # original value: 190
         sleep(0.05)
 
         # At this point the cube is at an angle, push it forward to
@@ -371,7 +372,7 @@ class MindCuber(object):
         log.info("\n")
 
     def scan(self):
-        dpl.text_pixels('Würfel scannen...', clear_screen=True, x=10, y=10, text_color='black', font=None)
+        dpl.text_pixels('Würfel scannen...', clear_screen=True, x=10, y=10, text_color='black', font=fonts.load('luBS19'))
 
         log.info("scan()")
         self.colors = {}
@@ -490,7 +491,7 @@ class MindCuber(object):
         self.flipper_away()
 
     def wait_for_cube_insert(self):
-        dpl.text_pixels('Bitte Würfel einlegen', clear_screen=True, x=10, y=10, text_color='black', font=None)
+        dpl.text_pixels('Bitte Würfel einlegen', clear_screen=True, x=10, y=10, text_color='black', font=fonts.load('luBS19'))
 
         rubiks_present = 0
         rubiks_present_target = 10
@@ -521,77 +522,72 @@ class MindCuber(object):
 
             time.sleep(0.1)
 
-def wait_for_button_press(button):
+def wait_for_button_press():
     pressed = None
     while True:
-        allpressed = button.buttons_pressed
+        allpressed = btn.buttons_pressed
         if bool(allpressed):
             pressed = allpressed[0]  # just get the first one
-            while not button.wait_for_released(pressed):
+            while not btn.wait_for_released(pressed):
                 pass
             break
     return pressed
 
 if __name__ == '__main__':
-    dpl.text_pixels('Der Farbsensor wird kalibriert...', clear_screen=True, x=10, y=10, text_color='black', font=None)
     
     calibration_values_red = []
     calibration_values_green = []
     calibration_values_blue = []
 
     # here the color sensor is beeing calibrated 5 times to get the best result
-    dpl.text_pixels('Kalibrieren?', clear_screen=True, x=10, y=10, text_color='black', font=None)
-    pressed = wait_for_button_press(btn)
+    # logging.basicConfig(filename='rubiks.log',
+    logging.basicConfig(level=logging.INFO,
+                            format='%(asctime)s %(filename)12s %(levelname)8s: %(message)s')
+    log = logging.getLogger(__name__)
+
+    # Color the errors and warnings in red
+    logging.addLevelName(logging.ERROR, "\033[91m   %s\033[0m" % logging.getLevelName(logging.ERROR))
+    logging.addLevelName(logging.WARNING, "\033[91m %s\033[0m" % logging.getLevelName(logging.WARNING))
+
+    mcube = MindCuber()
+
+    dpl.text_pixels('Kalibrieren?', clear_screen=True, x=10, y=10, text_color='black', font=fonts.load('luBS19'))
+    pressed = wait_for_button_press()
     if pressed == "enter":
+        dpl.text_pixels('Der Farbsensor wird kalibriert...', clear_screen=True, x=10, y=10, text_color='black', font=fonts.load('luBS19'))        
+
+        mcube.wait_for_cube_insert()
+
+        # Push the cube to the right so that it is in the expected position when we begin scanning
+        mcube.flipper_hold_cube(100)
+        mcube.flipper_away(100)
+
+        # Scan the middle square
+        mcube.colorarm_middle()
+
         for i in range(5):
-        
-            # logging.basicConfig(filename='rubiks.log',
-            logging.basicConfig(level=logging.INFO,
-                                    format='%(asctime)s %(filename)12s %(levelname)8s: %(message)s')
-            log = logging.getLogger(__name__)
+            mcube.color_sensor.calibrate_white()
+            
+            # add to array
+            calibration_values_red.append(mcube.color_sensor.red_max)
+            calibration_values_green.append(mcube.color_sensor.green_max)
+            calibration_values_blue.append(mcube.color_sensor.blue_max)
 
-            # Color the errors and warnings in red
-            logging.addLevelName(logging.ERROR, "\033[91m   %s\033[0m" % logging.getLevelName(logging.ERROR))
-            logging.addLevelName(logging.WARNING, "\033[91m %s\033[0m" % logging.getLevelName(logging.WARNING))
-
-            mcube = MindCuber()
-
-            try:
-                mcube.wait_for_cube_insert()
-
-                # Push the cube to the right so that it is in the expected position when we begin scanning
-                mcube.flipper_hold_cube(100)
-                mcube.flipper_away(100)
-
-                # Scan the middle square
-                mcube.colorarm_middle()
-                mcube.color_sensor.calibrate_white()
-                
-                # add to array
-                calibration_values_red.append(mcube.color_sensor.red_max)
-                calibration_values_green.append(mcube.color_sensor.green_max)
-                calibration_values_green.append(mcube.color_sensor.blue_max)
-
-                mcube.colorarm_remove()
-
-            except Exception as e:
-                log.exception(e)
-                mcube.shutdown_robot()
-                sys.exit(1)
+        mcube.colorarm_remove()
                 
         # calculate average red green blue
-        avg = []
+        avg = [0, 0, 0]
         
-        for i in range(len(calibration_values_red)):
-            avg[0] += calibration_values_red[i]
+        for i in calibration_values_red:
+            avg[0] += i
         avg[0] = avg[0] // len(calibration_values_red)
 
-        for i in range(len(calibration_values_green)):
-            avg[1] += calibration_values_green[i]
+        for i in calibration_values_green:
+            avg[1] += i
         avg[1] = avg[1] // len(calibration_values_green)
         
-        for i in range(len(calibration_values_blue)):
-            avg[2] += calibration_values_blue[i]
+        for i in calibration_values_blue:
+            avg[2] += i
         avg[2] = avg[2] // len(calibration_values_blue)
         
         # write to file
@@ -602,9 +598,9 @@ if __name__ == '__main__':
 
     while True:
         dpl.clear()
-        dpl.text_pixels('Start?', clear_screen=True, x=10, y=64, text_color='black', font=None) #TODO Grafik für Idiotensicherheit
+        dpl.text_pixels('Start?', clear_screen=True, x=10, y=64, text_color='black', font=fonts.load('luBS19')) #TODO Grafik für Idiotensicherheit
         
-        pressed = wait_for_button_press(btn)
+        pressed = wait_for_button_press()
         if pressed:
             dpl.clear()
             # logging.basicConfig(filename='rubiks.log',
@@ -622,7 +618,7 @@ if __name__ == '__main__':
                 
                 mcube.wait_for_cube_insert()
                 dpl.clear()
-                dpl.text_pixels('Scannen...', clear_screen=True, x=10, y=10, text_color='black', font=None)
+                dpl.text_pixels('Scannen...', clear_screen=True, x=10, y=10, text_color='black', font=fonts.load('luBS19'))
 
                 # Push the cube to the right so that it is in the expected
                 # position when we begin scanning
@@ -632,9 +628,9 @@ if __name__ == '__main__':
                 mcube.scan()
 
                 dpl.clear()
-                dpl.text_pixels('Lösen...', clear_screen=True, x=10, y=10, text_color='black', font=None)
+                dpl.text_pixels('Lösen...', clear_screen=True, x=10, y=10, text_color='black', font=fonts.load('luBS19'))
                 mcube.resolve()
-                dpl.text_pixels('Presented by KMXdev', clear_screen=True, x=10, y=10, text_color='black', font=None)
+                dpl.text_pixels('Presented by KMXdev', clear_screen=True, x=10, y=10, text_color='black', font=fonts.load('luBS19'))
 
             except Exception as e:
                 log.exception(e)
