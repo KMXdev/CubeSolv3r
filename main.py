@@ -521,6 +521,16 @@ class MindCuber(object):
 
             time.sleep(0.1)
 
+def wait_for_button_press(button):
+    pressed = None
+    while True:
+        allpressed = button.buttons_pressed
+        if bool(allpressed):
+            pressed = allpressed[0]  # just get the first one
+            while not button.wait_for_released(pressed):
+                pass
+            break
+    return pressed
 
 if __name__ == '__main__':
     dpl.text_pixels('Der Farbsensor wird kalibriert...', clear_screen=True, x=10, y=10, text_color='black', font=None)
@@ -531,9 +541,8 @@ if __name__ == '__main__':
 
     # here the color sensor is beeing calibrated 5 times to get the best result
     dpl.text_pixels('Kalibrieren?', clear_screen=True, x=10, y=10, text_color='black', font=None)
-    while not btn.any():
-        pass
-    if btn.enter:
+    pressed = wait_for_button_press(btn)
+    if pressed == "enter":
         for i in range(5):
         
             # logging.basicConfig(filename='rubiks.log',
@@ -593,9 +602,10 @@ if __name__ == '__main__':
 
     while True:
         dpl.clear()
-        dpl.text_pixels('Mittlere Taste drücken', clear_screen=True, x=10, y=64, text_color='black', font=None) #TODO Grafik für Idiotensicherheit
+        dpl.text_pixels('Start?', clear_screen=True, x=10, y=64, text_color='black', font=None) #TODO Grafik für Idiotensicherheit
         
-        if btn.enter:
+        pressed = wait_for_button_press(btn)
+        if pressed:
             dpl.clear()
             # logging.basicConfig(filename='rubiks.log',
             logging.basicConfig(level=logging.INFO,
