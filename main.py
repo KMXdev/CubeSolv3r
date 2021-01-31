@@ -31,11 +31,14 @@ import os
 import signal
 import sys
 import time
+from PIL import Image
 
 log = logging.getLogger(__name__)
 
 btn = Button()
 dpl = Display()
+
+heinz = Image.open('/home/robot/pics/heinz2.bmp')
 
 class ScanError(Exception):
     pass
@@ -633,6 +636,9 @@ if __name__ == '__main__':
                 mcube.resolve()
                 write_text('presented by KMXdev')
                 sleep(10)
+                dpl.image.paste(heinz, (0,0))
+                dpl.update()
+                sleep(5)
 
             except Exception as e:
                 log.exception(e)
