@@ -395,6 +395,8 @@ class MindCuber(object):
         if self.shutdown:
             return
 
+        write_text('Züge', 'berechnen...')
+
         log.info("RGB json:\n%s\n" % json.dumps(self.colors))
         self.rgb_solver = RubiksColorSolverGeneric(3)
         self.rgb_solver.enter_scan_data(self.colors)
@@ -520,7 +522,11 @@ class MindCuber(object):
 
             time.sleep(0.1)
 
-    # def motors_off(self)
+def motors_off():
+    mcube.flipper.off()
+    mcube.colorarm.off()
+    mcube.turntable.off()
+        
 
 def wait_for_button_press():
     log.info("Warten auf Knopfdruck...")
@@ -589,6 +595,7 @@ if __name__ == '__main__':
             sleep(0.5)
 
             mcube.colorarm_remove()
+            motors_off()
                 
         # calculate average red green blue
         avg = [0, 0, 0]
@@ -615,7 +622,7 @@ if __name__ == '__main__':
         dpl.clear()
         leds.set_color('LEFT', 'RED')
         leds.set_color('RIGHT', 'RED')
-        write_text('Start?', '-> Mittlere Taste')    #TODO Grafik für Idiotensicherheit
+        write_text('Start?', '-> Taste drücken')
 
         pressed = wait_for_button_press()
         if pressed:
@@ -642,14 +649,27 @@ if __name__ == '__main__':
                 mcube.flipper_away(100)
 
                 mcube.scan()
+                
                 leds.set_color('LEFT', 'GREEN')
-                write_text('Lösen...')
                 leds.set_color('RIGHT', 'YELLOW')
-                write_text('Züge', 'berechnen...')
+
                 mcube.resolve()
+                motors_off()
+                
                 leds.set_color('RIGHT', 'GREEN')
+                motors_off()
+
                 write_text('presented by', 'KMXdev')
+                motors_off()
                 sleep(10)
+                write_text('supported by', 'Dr. Tannenberg')
+                sleep(5)
+                write_text('&', 'Roberta')
+                sleep(5)
+                write_text('join')
+                sleep(0.5)
+                write_text('join', 'now')
+                sleep(3)
 
             except Exception as e:
                 log.exception(e)
