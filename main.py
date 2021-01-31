@@ -25,6 +25,7 @@ from time import sleep
 from ev3dev2.button import Button
 from ev3dev2.display import Display
 import ev3dev2.fonts as fonts
+from ev3dev2.led import Leds
 import json
 import logging
 import os
@@ -36,6 +37,7 @@ log = logging.getLogger(__name__)
 
 btn = Button()
 dpl = Display()
+leds = Leds()
 
 class ScanError(Exception):
     pass
@@ -536,6 +538,8 @@ def write_text(text):
 
 if __name__ == '__main__':
     write_text('Initialisierung...')
+    leds.set_color('LEFT', 'RED')
+    leds.set_color('RIGHT', 'RED')
     
     calibration_values_red = []
     calibration_values_green = []
@@ -558,6 +562,7 @@ if __name__ == '__main__':
     pressed = wait_for_button_press()
     if pressed == "enter":
         write_text('Der Farbsensor wird kalibriert...')
+        leds.animate_flash('YELLOW', sleeptime=0.75)
 
         for i in range(5):
             mcube.wait_for_cube_insert()
@@ -602,6 +607,8 @@ if __name__ == '__main__':
 
     while True:
         dpl.clear()
+        leds.set_color('LEFT', 'RED')
+        leds.set_color('RIGHT', 'RED')
         write_text('Start?')    #TODO Grafik für Idiotensicherheit
 
         pressed = wait_for_button_press()
@@ -621,6 +628,7 @@ if __name__ == '__main__':
             try:
                 mcube.wait_for_cube_insert()
                 write_text('Scannen...')
+                leds.animate_flash('YELLOW', groups='LEFT', sleeptime=0.75)
 
                 # Push the cube to the right so that it is in the expected
                 # position when we begin scanning
@@ -628,9 +636,11 @@ if __name__ == '__main__':
                 mcube.flipper_away(100)
 
                 mcube.scan()
-
+                leds.set_color('LEFT', 'GREEN')
                 write_text('Lösen...')
+                leds.animate_flash('YELLOW', groups='RIGHT', sleeptime=0.75)
                 mcube.resolve()
+                leds.set_color('RIGHT', 'GREEN')
                 write_text('presented by KMXdev')
                 sleep(10)
 
