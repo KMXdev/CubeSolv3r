@@ -370,8 +370,6 @@ class MindCuber(object):
         log.info("\n")
 
     def scan(self):
-        write_text('Würfel scannen...')
-
         log.info("scan()")
         self.colors = {}
         self.k = 0
@@ -457,6 +455,8 @@ class MindCuber(object):
                 rotation_dir = 3
 
             log.info("Move %d/%d: %s%s (a %s)" % (i, total_actions, face_down, rotation_dir, pformat(a)))
+            moves = "Zug {} von {}".format(i, total_actions)
+            write_text('Lösen...', moves)
             self.move(face_down)
 
             if rotation_dir == 1:
@@ -489,7 +489,7 @@ class MindCuber(object):
         self.flipper_away()
 
     def wait_for_cube_insert(self):
-        write_text('Bitte Würfel einlegen')
+        write_text('Bitte Würfel', 'einlegen')
 
         rubiks_present = 0
         rubiks_present_target = 20
@@ -520,6 +520,8 @@ class MindCuber(object):
 
             time.sleep(0.1)
 
+    # def motors_off(self)
+
 def wait_for_button_press():
     log.info("Warten auf Knopfdruck...")
     pressed = None
@@ -532,8 +534,9 @@ def wait_for_button_press():
             break
     return pressed
 
-def write_text(text):
-    dpl.text_pixels(text, clear_screen=True, x=10, y=10, text_color='black', font=fonts.load('luBS19'))
+def write_text(text0, text1=''):
+    dpl.text_pixels(text0, clear_screen=True, x=10, y=15, text_color='black', font=fonts.load('luBS19'))
+    dpl.text_pixels(text1, clear_screen=False, x=10, y=40, text_color='black', font=fonts.load('luBS19'))
     dpl.update()
 
 if __name__ == '__main__':
@@ -557,16 +560,18 @@ if __name__ == '__main__':
 
     mcube = MindCuber()
 
-    write_text('Kalibrieren?')
+    write_text('Kalibrieren?', '-> Mittlere Taste')
 
     pressed = wait_for_button_press()
     if pressed == "enter":
-        write_text('Der Farbsensor wird kalibriert...')
+        write_text('Der Farbsensor', 'wird kalibriert...')
         leds.set_color('LEFT', 'YELLOW')
         leds.set_color('RIGHT', 'YELLOW')
 
         for i in range(5):
             mcube.wait_for_cube_insert()
+
+            write_text('Kalibrieren...')
 
             # Push the cube to the right so that it is in the expected position when we begin scanning
             mcube.flipper_hold_cube(100)
@@ -610,7 +615,7 @@ if __name__ == '__main__':
         dpl.clear()
         leds.set_color('LEFT', 'RED')
         leds.set_color('RIGHT', 'RED')
-        write_text('Start?')    #TODO Grafik für Idiotensicherheit
+        write_text('Start?', '-> Mittlere Taste')    #TODO Grafik für Idiotensicherheit
 
         pressed = wait_for_button_press()
         if pressed:
@@ -640,9 +645,10 @@ if __name__ == '__main__':
                 leds.set_color('LEFT', 'GREEN')
                 write_text('Lösen...')
                 leds.set_color('RIGHT', 'YELLOW')
+                write_text('Züge', 'berechnen...')
                 mcube.resolve()
                 leds.set_color('RIGHT', 'GREEN')
-                write_text('presented by KMXdev')
+                write_text('presented by', 'KMXdev')
                 sleep(10)
 
             except Exception as e:
