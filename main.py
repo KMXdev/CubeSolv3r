@@ -56,7 +56,6 @@ class MindCuber(object):
     flip_speed_push = 400
 
     def __init__(self):
-
         self.shutdown = False
         self.flipper = LargeMotor(OUTPUT_A)
         self.turntable = LargeMotor(OUTPUT_B)
@@ -88,9 +87,6 @@ class MindCuber(object):
                         log.info("blue max is %d" % self.color_sensor.blue_max)
 
     def init_motors(self):
-
-        dpl.text_pixels('Initialisierung...', clear_screen=True, x=10, y=10, text_color='black', font=fonts.load('luBS19'))
-
         for x in (self.flipper, self.turntable, self.colorarm):
             x.reset()
 
@@ -290,7 +286,7 @@ class MindCuber(object):
 
     def colorarm_remove(self):
         log.info("colorarm_remove()")
-        self.colorarm.on_to_position(SpeedDPS(600), 0)
+        self.colorarm.on_to_position(SpeedDPS(600), -108)
 
     def colorarm_remove_halfway(self):
         log.info("colorarm_remove_halfway()")
@@ -372,7 +368,7 @@ class MindCuber(object):
         log.info("\n")
 
     def scan(self):
-        dpl.text_pixels('Würfel scannen...', clear_screen=True, x=10, y=10, text_color='black', font=fonts.load('luBS19'))
+        write_text('Würfel scannen...')
 
         log.info("scan()")
         self.colors = {}
@@ -491,10 +487,10 @@ class MindCuber(object):
         self.flipper_away()
 
     def wait_for_cube_insert(self):
-        dpl.text_pixels('Bitte Würfel einlegen', clear_screen=True, x=10, y=10, text_color='black', font=fonts.load('luBS19'))
+        write_text('Bitte Würfel einlegen')
 
         rubiks_present = 0
-        rubiks_present_target = 10
+        rubiks_present_target = 20
         log.info('wait for cube...to be inserted')
 
         while True:
@@ -523,6 +519,7 @@ class MindCuber(object):
             time.sleep(0.1)
 
 def wait_for_button_press():
+    log.info("Warten auf Knopfdruck...")
     pressed = None
     while True:
         allpressed = btn.buttons_pressed
@@ -533,7 +530,12 @@ def wait_for_button_press():
             break
     return pressed
 
+def write_text(text):
+    dpl.text_pixels(text, clear_screen=True, x=10, y=10, text_color='black', font=fonts.load('luBS19'))
+    dpl.update()
+
 if __name__ == '__main__':
+    write_text('Initialisierung...')
     
     calibration_values_red = []
     calibration_values_green = []
@@ -551,21 +553,21 @@ if __name__ == '__main__':
 
     mcube = MindCuber()
 
-    dpl.text_pixels('Kalibrieren?', clear_screen=True, x=10, y=10, text_color='black', font=fonts.load('luBS19'))
+    write_text('Kalibrieren?')
+
     pressed = wait_for_button_press()
     if pressed == "enter":
-        dpl.text_pixels('Der Farbsensor wird kalibriert...', clear_screen=True, x=10, y=10, text_color='black', font=fonts.load('luBS19'))        
-
-        mcube.wait_for_cube_insert()
-
-        # Push the cube to the right so that it is in the expected position when we begin scanning
-        mcube.flipper_hold_cube(100)
-        mcube.flipper_away(100)
-
-        # Scan the middle square
-        mcube.colorarm_middle()
+        write_text('Der Farbsensor wird kalibriert...')
 
         for i in range(5):
+            mcube.wait_for_cube_insert()
+
+            # Push the cube to the right so that it is in the expected position when we begin scanning
+            mcube.flipper_hold_cube(100)
+            mcube.flipper_away(100)
+
+            # Scan the middle square
+            mcube.colorarm_middle()
             mcube.color_sensor.calibrate_white()
             
             # add to array
@@ -573,7 +575,9 @@ if __name__ == '__main__':
             calibration_values_green.append(mcube.color_sensor.green_max)
             calibration_values_blue.append(mcube.color_sensor.blue_max)
 
-        mcube.colorarm_remove()
+            sleep(0.5)
+
+            mcube.colorarm_remove()
                 
         # calculate average red green blue
         avg = [0, 0, 0]
@@ -598,8 +602,8 @@ if __name__ == '__main__':
 
     while True:
         dpl.clear()
-        dpl.text_pixels('Start?', clear_screen=True, x=10, y=64, text_color='black', font=fonts.load('luBS19')) #TODO Grafik für Idiotensicherheit
-        
+        write_text('Start?')    #TODO Grafik für Idiotensicherheit
+
         pressed = wait_for_button_press()
         if pressed:
             dpl.clear()
@@ -615,10 +619,8 @@ if __name__ == '__main__':
             mcube = MindCuber()
 
             try:
-                
                 mcube.wait_for_cube_insert()
-                dpl.clear()
-                dpl.text_pixels('Scannen...', clear_screen=True, x=10, y=10, text_color='black', font=fonts.load('luBS19'))
+                write_text('Scannen...')
 
                 # Push the cube to the right so that it is in the expected
                 # position when we begin scanning
@@ -627,10 +629,10 @@ if __name__ == '__main__':
 
                 mcube.scan()
 
-                dpl.clear()
-                dpl.text_pixels('Lösen...', clear_screen=True, x=10, y=10, text_color='black', font=fonts.load('luBS19'))
+                write_text('Lösen...')
                 mcube.resolve()
-                dpl.text_pixels('Presented by KMXdev', clear_screen=True, x=10, y=10, text_color='black', font=fonts.load('luBS19'))
+                write_text('presented by KMXdev')
+                sleep(10)
 
             except Exception as e:
                 log.exception(e)
