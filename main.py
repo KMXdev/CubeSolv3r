@@ -675,9 +675,12 @@ if __name__ == '__main__':
                 write_text('join', 'now')
                 sleep(3)
                 
-                dpl.image.paste(heinz, (0,0))
-                dpl.update()
-                sleep(5)
+                write_text('Neustart', '-> Mittlere Taste')
+                pressed = wait_for_button_press()
+                if pressed == "down":
+                    dpl.image.paste(heinz, (0,0))
+                    dpl.update()
+                    sleep(5)
 
             except Exception as e:
                 log.exception(e)
