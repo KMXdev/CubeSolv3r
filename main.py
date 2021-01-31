@@ -32,12 +32,15 @@ import os
 import signal
 import sys
 import time
+from PIL import Image
 
 log = logging.getLogger(__name__)
 
 btn = Button()
 dpl = Display()
 leds = Leds()
+
+heinz = Image.open('/home/robot/pics/heinz2.bmp')
 
 class ScanError(Exception):
     pass
@@ -661,7 +664,8 @@ if __name__ == '__main__':
 
                 write_text('presented by', 'KMXdev')
                 motors_off()
-                sleep(10)
+                
+                sleep(5)
                 write_text('supported by', 'Dr. Tannenberg')
                 sleep(5)
                 write_text('&', 'Roberta')
@@ -670,6 +674,13 @@ if __name__ == '__main__':
                 sleep(0.5)
                 write_text('join', 'now')
                 sleep(3)
+                
+                write_text('Neustart', '-> Mittlere Taste')
+                pressed = wait_for_button_press()
+                if pressed == "down":
+                    dpl.image.paste(heinz, (0,0))
+                    dpl.update()
+                    sleep(5)
 
             except Exception as e:
                 log.exception(e)
