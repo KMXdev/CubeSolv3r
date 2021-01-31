@@ -3,4 +3,7 @@ __pycache__/
 *.pyc
 .venv/
 .vscode
+heinz.png
+heinz.bmp
+heinz2.bmp
 mindcuber.py
