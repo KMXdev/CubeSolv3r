@@ -40,7 +40,7 @@ btn = Button()
 dpl = Display()
 leds = Leds()
 
-heinz = Image.open('/home/robot/pics/heinz2.bmp')
+eegg = Image.open('/home/robot/pics/eegg.bmp')
 
 class ScanError(Exception):
     pass
@@ -678,7 +678,7 @@ if __name__ == '__main__':
                 write_text('Neustart', '-> Mittlere Taste')
                 pressed = wait_for_button_press()
                 if pressed == "down":
-                    dpl.image.paste(heinz, (0,0))
+                    dpl.image.paste(eegg, (0,0))
                     dpl.update()
                     sleep(5)
 
