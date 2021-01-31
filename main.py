@@ -562,7 +562,8 @@ if __name__ == '__main__':
     pressed = wait_for_button_press()
     if pressed == "enter":
         write_text('Der Farbsensor wird kalibriert...')
-        leds.animate_flash('YELLOW', sleeptime=0.75)
+        leds.set_color('LEFT', 'YELLOW')
+        leds.set_color('RIGHT', 'YELLOW')
 
         for i in range(5):
             mcube.wait_for_cube_insert()
@@ -628,7 +629,7 @@ if __name__ == '__main__':
             try:
                 mcube.wait_for_cube_insert()
                 write_text('Scannen...')
-                leds.animate_flash('YELLOW', groups='LEFT', sleeptime=0.75)
+                leds.set_color('LEFT', 'YELLOW')
 
                 # Push the cube to the right so that it is in the expected
                 # position when we begin scanning
@@ -638,7 +639,7 @@ if __name__ == '__main__':
                 mcube.scan()
                 leds.set_color('LEFT', 'GREEN')
                 write_text('Lösen...')
-                leds.animate_flash('YELLOW', groups='RIGHT', sleeptime=0.75)
+                leds.set_color('RIGHT', 'YELLOW')
                 mcube.resolve()
                 leds.set_color('RIGHT', 'GREEN')
                 write_text('presented by KMXdev')
