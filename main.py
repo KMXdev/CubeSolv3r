@@ -17,7 +17,7 @@ License: GPL-3.0 License
 
 
 from ev3dev2.motor import LargeMotor, MediumMotor, OUTPUT_A, OUTPUT_B, OUTPUT_C, SpeedDPS
-from ev3dev2.sensor.lego import ColorSensor, InfraredSensor
+from ev3dev2.sensor.lego import ColorSensor, UltrasonicSensor
 from pprint import pformat
 from rubikscolorresolver import RubiksColorSolverGeneric
 from subprocess import check_output
@@ -67,7 +67,8 @@ class MindCuber(object):
         self.colorarm = MediumMotor(OUTPUT_C)
         self.color_sensor = ColorSensor()
         self.color_sensor.mode = self.color_sensor.MODE_RGB_RAW
-        self.infrared_sensor = InfraredSensor()
+        self.ultrasonic_sensor = UltrasonicSensor()
+        self.ultrasonic_sensor.MODE_US_DIST_CM = 'US-DIST-CM'
         self.init_motors()
         self.state = ['U', 'D', 'F', 'L', 'B', 'R']
         self.rgb_solver = None
@@ -404,6 +405,7 @@ class MindCuber(object):
         self.rgb_solver = RubiksColorSolverGeneric(3)
         self.rgb_solver.enter_scan_data(self.colors)
         self.rgb_solver.crunch_colors()
+
         self.cube_kociemba = self.rgb_solver.cube_for_kociemba_strict()
         log.info("Final Colors (kociemba): %s" % ''.join(self.cube_kociemba))
 
@@ -505,18 +507,18 @@ class MindCuber(object):
             if self.shutdown:
                 break
 
-            dist = self.infrared_sensor.proximity
+            dist = self.ultrasonic_sensor.distance_centimeters
 
             # It is odd but sometimes when the cube is inserted
-            # the IR sensor returns a value of 100...most of the
+            # the Ultrasonic sensor returns a value of 100...most of the
             # time it is just a value less than 50
-            if dist < 50 or dist == 100:
+            if dist < 35.0 or dist == 70.0:
                 rubiks_present += 1
-                log.info("wait for cube...distance %d, present for %d/%d" %
+                log.info("wait for cube...distance %f, present for %d/%d" %
                          (dist, rubiks_present, rubiks_present_target))
             else:
                 if rubiks_present:
-                    log.info('wait for cube...cube removed (%d)' % dist)
+                    log.info('wait for cube...cube removed (%f)' % dist)
                 rubiks_present = 0
 
             if rubiks_present >= rubiks_present_target:
