@@ -45,7 +45,6 @@ eegg = Image.open('/home/robot/pics/eegg.bmp')
 class ScanError(Exception):
     pass
 
-
 class MindCuber(object):
     scan_order = [
         5, 9, 6, 3, 2, 1, 4, 7, 8,
@@ -494,8 +493,6 @@ class MindCuber(object):
         self.flipper_away()
 
     def wait_for_cube_insert(self):
-        write_text('Bitte Würfel', 'einlegen')
-
         rubiks_present = 0
         rubiks_present_target = 20
         log.info('wait for cube...to be inserted')
@@ -529,7 +526,6 @@ def motors_off():
     mcube.flipper.off()
     mcube.colorarm.off()
     mcube.turntable.off()
-        
 
 def wait_for_button_press():
     log.info("Warten auf Knopfdruck...")
@@ -543,9 +539,11 @@ def wait_for_button_press():
             break
     return pressed
 
-def write_text(text0, text1=''):
+def write_text(text0, text1='', text2='', text3=''):
     dpl.text_pixels(text0, clear_screen=True, x=10, y=15, text_color='black', font=fonts.load('luBS19'))
     dpl.text_pixels(text1, clear_screen=False, x=10, y=40, text_color='black', font=fonts.load('luBS19'))
+    dpl.text_pixels(text2, clear_screen=False, x=10, y=65, text_color='black', font=fonts.load('luBS19'))
+    dpl.text_pixels(text3, clear_screen=False, x=10, y=90, text_color='black', font=fonts.load('luBS19'))
     dpl.update()
 
 if __name__ == '__main__':
@@ -558,9 +556,7 @@ if __name__ == '__main__':
     calibration_values_blue = []
 
     # here the color sensor is beeing calibrated 5 times to get the best result
-    # logging.basicConfig(filename='rubiks.log',
-    logging.basicConfig(level=logging.INFO,
-                            format='%(asctime)s %(filename)12s %(levelname)8s: %(message)s')
+    logging.basicConfig(level=logging.INFO, format='%(asctime)s %(filename)12s %(levelname)8s: %(message)s')
     log = logging.getLogger(__name__)
 
     # Color the errors and warnings in red
@@ -569,7 +565,7 @@ if __name__ == '__main__':
 
     mcube = MindCuber()
 
-    write_text('Kalibrieren?', '-> Mittlere Taste')
+    write_text('Kalibrieren?', '-> Mittlere Taste', 'Wenn nicht:', '-> Andere Taste')
 
     pressed = wait_for_button_press()
     if pressed == "enter":
@@ -578,6 +574,7 @@ if __name__ == '__main__':
         leds.set_color('RIGHT', 'YELLOW')
 
         for i in range(5):
+            write_text('Bitte Würfel mit', 'dem weißen', 'Mittelteil nach', 'oben einlegen')
             mcube.wait_for_cube_insert()
 
             write_text('Kalibrieren...')
@@ -631,8 +628,7 @@ if __name__ == '__main__':
         if pressed:
             dpl.clear()
             # logging.basicConfig(filename='rubiks.log',
-            logging.basicConfig(level=logging.INFO,
-                                format='%(asctime)s %(filename)12s %(levelname)8s: %(message)s')
+            logging.basicConfig(level=logging.INFO, format='%(asctime)s %(filename)12s %(levelname)8s: %(message)s')
             log = logging.getLogger(__name__)
 
             # Color the errors and warnings in red
@@ -642,6 +638,7 @@ if __name__ == '__main__':
             mcube = MindCuber()
 
             try:
+                write_text('Bitte Würfel', 'einlegen')
                 mcube.wait_for_cube_insert()
                 write_text('Scannen...')
                 leds.set_color('LEFT', 'YELLOW')
@@ -663,17 +660,9 @@ if __name__ == '__main__':
                 motors_off()
 
                 write_text('presented by', 'KMXdev')
-                motors_off()
-                
                 sleep(5)
-                write_text('supported by', 'Dr. Tannenberg')
+                write_text('unterstützt von:', 'Dr. Tannenberg', '&', 'Lego Roberta')
                 sleep(5)
-                write_text('&', 'Roberta')
-                sleep(5)
-                write_text('join')
-                sleep(0.5)
-                write_text('join', 'now')
-                sleep(3)
                 
                 write_text('Neustart', '-> Mittlere Taste')
                 pressed = wait_for_button_press()
