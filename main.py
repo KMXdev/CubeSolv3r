@@ -545,9 +545,11 @@ def wait_for_button_press():
             break
     return pressed
 
-def write_text(text0, text1=''):
+def write_text(text0, text1='', text2='', text3=''):
     dpl.text_pixels(text0, clear_screen=True, x=10, y=15, text_color='black', font=fonts.load('luBS19'))
     dpl.text_pixels(text1, clear_screen=False, x=10, y=40, text_color='black', font=fonts.load('luBS19'))
+    dpl.text_pixels(text2, clear_screen=False, x=10, y=65, text_color='black', font=fonts.load('luBS19'))
+    dpl.text_pixels(text3, clear_screen=False, x=10, y=90, text_color='black', font=fonts.load('luBS19'))
     dpl.update()
 
 if __name__ == '__main__':
